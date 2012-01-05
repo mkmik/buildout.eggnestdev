@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.2'
-name = 'buildout.eggnest'
+version = '0.3'
+name = 'buildout.eggnestdev'
 
 
 long_description = (
@@ -17,7 +17,7 @@ long_description = (
     'Detailed Documentation\n'
     '======================\n'
     + '\n' +
-    read('buildout', 'eggnest', 'eggnest.txt')
+    read('buildout', 'eggnestdev', 'eggnest.txt')
     )
 
 entry_point = '%s.eggnest:install' % name
@@ -37,8 +37,8 @@ setup(name=name,
         ],
       license='GPL',
       keywords='buildout extension auto load',
-      author='Martin Lundwall',
-      author_email='martin@betahaus.net',
+      author='Marko Mikulicic',
+      author_email='mmikulicic@gmail.com',
       url='http://pypi.python.org/pypi/'+name,
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['buildout'],
@@ -49,7 +49,7 @@ setup(name=name,
                         ],
       tests_require=tests_require,
       extras_require=dict(tests=tests_require),
-      test_suite = 'buildout.eggnest.tests.test_suite',
+      test_suite = 'buildout.eggnestdev.tests.test_suite',
       entry_points=entry_points,
       )
 

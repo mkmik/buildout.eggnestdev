@@ -1,15 +1,14 @@
 Metadata-Version: 1.0
-Name: buildout.eggnest
-Version: 0.2
+Name: buildout.eggnestdev
+Version: 0.3
 Summary: buildout extension to auto load eggs
-Home-page: http://pypi.python.org/pypi/buildout.eggnest
-Author: Martin Lundwall
-Author-email: martin@betahaus.net
+Home-page: http://pypi.python.org/pypi/buildout.eggnestdev
+Author: Marko Mikulicic
+Author-email: mmikulicic@gmail.com
 License: GPL
-Description: buildout.eggnest
+Description: buildout.eggnestdev
         =================
-        
-        
+                
         The problem
         -----------
         It is very convenient to install functionality to a buildout with just
@@ -28,7 +27,7 @@ Description: buildout.eggnest
         is to take a simple text file, and drop it in a certain directory. When you rerun buildout the
         contents of that file is parsed, the specified egg is downloaded and added to the instance.
         
-        When ``buildout.eggnest`` is run it::
+        When ``buildout.eggnestdev`` is run it::
         
         1. If ``eggnest-src-directory`` is not given the default directory ``src``
         is scanned.
@@ -40,7 +39,7 @@ Description: buildout.eggnest
         
         NOTE: The extension does not write to the buildout's configuration file.
         
-        buildout.eggnest options
+        buildout.eggnestdev options
         -------------------------
         
         eggnest-src-directory:
@@ -59,11 +58,11 @@ Description: buildout.eggnest
         How to use it
         -------------
         
-        To use ``buildout.eggnest`` you need to add the following to your buildout.cfg::
+        To use ``buildout.eggnestdev`` you need to add the following to your buildout.cfg::
         
         [buildout]
         extensions =
-        buildout.eggnest
+        buildout.eggnestdev
         
         eggnest-parts =
         instance
@@ -96,9 +95,18 @@ Description: buildout.eggnest
         
         buildout.eggnest was created by Martin Lundwall <martin@webworks.se> after an
         initial idea by Jorgen Modin <jorgen@webworks.se>
+
+        buildout.eggnestdev was created by Marko Mikulicic <mmikulicic@gmail.com> in order to support
+        quick addition of develop deps.
         
         Change history
         ================
+
+        0.3 (unreleased)
+        ----------------
+        
+        - Support 'develop = ..' (mmikulicic)
+
         
         0.2 (unreleased)
         ----------------
