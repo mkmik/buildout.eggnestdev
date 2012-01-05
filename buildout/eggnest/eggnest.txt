@@ -1,0 +1,226 @@
+Tests for buildout.eggnest buildout extension
+-------------------------------------------------
+
+Let's create a buildout configuration file::
+
+    >>> data = """
+    ... [buildout]
+    ... parts = zope2 instance1 instance2 instance3
+    ... extensions = 
+    ... eggs =
+    ... develop = %s
+    ... eggnest-parts = instance1 instance2
+    ... [instance1]
+    ... recipe = plone.recipe.zope2instance
+    ... zope2-location = ${zope2:location}
+    ... user = admin:admin
+    ... [instance2]
+    ... recipe = plone.recipe.zope2instance
+    ... zope2-location = ${zope2:location}
+    ... user = admin:admin
+    ... [instance3]
+    ... recipe = plone.recipe.zope2instance
+    ... zope2-location = ${zope2:location}
+    ... user = admin:admin
+    ... [zope2]
+    ... recipe = plone.recipe.zope2install
+    ... url = http://www.zope.org/Products/Zope/2.9.8/Zope-2.9.8-final.tgz
+    ... """ % egg_dir
+    >>> rmdir(tempdir, 'buildout.test')
+    >>> cd(tempdir)
+    >>> sh('mkdir buildout.test')
+    mkdir buildout.test
+    <BLANKLINE>
+    >>> cd('buildout.test')
+    >>> touch('buildout.cfg', data=data)
+    >>> ls('.')
+    buildout.cfg
+
+run the buildout first time so we get our zope instances::
+
+    >>> sh('svn export svn://svn.zope.org/repos/main/zc.buildout/trunk/bootstrap/bootstrap.py')
+    svn export svn://svn.zope.org/repos/main/zc.buildout/trunk/bootstrap/bootstrap.py
+    A    bootstrap.py
+    Export complete.
+    <BLANKLINE>
+    >>> sh('python2.4 bootstrap.py')
+    python2.4 bootstrap.py
+    ... 
+    Creating directory '/private/tmp/buildout.test/bin'.
+    Creating directory '/private/tmp/buildout.test/parts'.
+    Creating directory '/private/tmp/buildout.test/develop-eggs'.
+    Generated script '/private/tmp/buildout.test/bin/buildout'.
+    <BLANKLINE>
+    
+    >>> sh('./bin/buildout')
+    ./bin/buildout
+    ...
+    Installing instance1.
+    ...
+    Installing instance2.
+    ...
+    Installing instance3.
+    ...
+    <BLANKLINE>
+    <BLANKLINE>
+    
+Now let's create a test products specification file and add the buildout.eggnest as an extension::
+	
+    >>> sh('mkdir src')
+    mkdir src
+    <BLANKLINE>
+    >>> product = """
+    ... [eggnest]
+    ... egg = 
+    ...     plone.portlet.static
+    ... zcml = 
+    ...     plone.portlet.static
+    ... """    
+    >>> touch('src/product.txt', data=product)
+    >>> ls('src')
+    product.txt
+    >>> data = data.replace('extensions =', 'extensions = buildout.eggnest')
+    >>> touch('buildout.cfg', data=data)
+ 
+
+Ok, so now that we have an egg, lets run the buildout in offline mode. We 
+should get a zcml slugs in parts/instance1/etc/package-includes and parts/instance2/etc/package-includes
+but not in parts/instance3/etc/package-includes,
+and a line with the path to our egg in the bin/instance1 and bin/instance2
+but not in bin/instance3 files. 
+
+First we check that there is nothing of the previous mentioned things::
+
+    >>> ls('develop-eggs')
+    buildout.eggnest.egg-link
+    >>> ls('parts/instance1/etc/package-includes') 
+    No directory named parts/instance1/etc/package-includes
+
+    >>> ls('parts/instance2/etc/package-includes') 
+    No directory named parts/instance2/etc/package-includes
+    
+    >>> ls('parts/instance3/etc/package-includes') 
+    No directory named parts/instance3/etc/package-includes
+
+    >>> sh('grep plone.portlet.static bin/instance1')
+    grep plone.portlet.static bin/instance1
+    <BLANKLINE>
+ 
+    >>> sh('grep plone.portlet.static bin/instance2')
+    grep plone.portlet.static bin/instance2
+    <BLANKLINE>
+
+    >>> sh('grep plone.portlet.static bin/instance3')
+    grep plone.portlet.static bin/instance3
+    <BLANKLINE>
+
+OK, now run the buildout in offline mode::
+   
+    >>> sh('./bin/buildout')
+    ./bin/buildout
+    ...
+
+Check that we have a correct created buildout. 
+
+Check that we have our zcml slugs in the package-includes::
+
+    >>> ls('parts', 'instance1', 'etc', 'package-includes')
+    001-plone.portlet.static-configure.zcml
+ 
+    >>> ls('parts', 'instance2', 'etc', 'package-includes')
+    001-plone.portlet.static-configure.zcml
+
+    >>> ls('parts', 'instance3', 'etc', 'package-includes')
+    No directory named parts/instance3/etc/package-includes
+    
+
+and in the end check that there is a line in bin/instance1 and bin/instance1
+that includes our egg in the path::
+
+    >>> code = cat('bin', 'instance1', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    False
+
+    >>> code = cat('bin', 'instance2', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    False
+    
+    >>> code = cat('bin', 'instance3', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    True
+    
+Let's now try the ``eggnest-src-directory`` option. We create a new buildout.cfg file
+with an empty ``eggnest-src-directory``::
+
+    >>> data = data.replace('eggs =', 'eggnest-src-directory = \neggs = ')
+    >>> touch('buildout.cfg', data=data)
+    >>> sh('./bin/buildout')
+    ./bin/buildout
+    ...
+
+
+No zcml slug in the instance 1,2 or 3:: 
+
+    >>> ls('parts', 'instance1', 'etc', 'package-includes')
+    No directory named parts/instance1/etc/package-includes
+
+    >>> ls('parts', 'instance2', 'etc', 'package-includes')
+    No directory named parts/instance2/etc/package-includes
+
+    >>> ls('parts', 'instance3', 'etc', 'package-includes')
+    No directory named parts/instance3/etc/package-includes
+
+Nor a line in bin/instance1, bin/instance2 or bin/instance3 with our egg path::
+
+    >>> code = cat('bin', 'instance1', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    True
+
+    >>> code = cat('bin', 'instance2', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    True
+
+    >>> code = cat('bin', 'instance3', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    True
+
+But if the ``eggnest-src-directory`` option is not empty::
+
+    >>> data = data.replace('eggnest-src-directory =', 'eggnest-src-directory = auto')
+    >>> touch('buildout.cfg', data=data)
+    >>> sh('rm src/product.txt')
+    rm src/product.txt
+    >>> sh('mkdir auto')
+    mkdir auto
+    >>> touch('auto/product.txt', data=product)
+    >>> ls('auto')
+    product.txt
+    >>> sh('./bin/buildout -o')
+    ./bin/buildout -o
+    ...
+
+and we get a zcml slug only in the specified target::
+
+    >>> ls('parts', 'instance1', 'etc', 'package-includes')
+    001-plone.portlet.static-configure.zcml
+ 
+    >>> ls('parts', 'instance2', 'etc', 'package-includes')
+    001-plone.portlet.static-configure.zcml
+
+    >>> ls('parts', 'instance3', 'etc', 'package-includes')
+    No directory named parts/instance3/etc/package-includes
+    
+and only the specified target's control script is updated::
+
+    >>> code = cat('bin', 'instance1', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    False
+
+    >>> code = cat('bin', 'instance2', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    False
+    
+    >>> code = cat('bin', 'instance3', returndata=True)
+    >>> code.find('plone.portlet.static') == -1
+    True
+

@@ -1,0 +1,12 @@
+Change history
+================
+
+0.2 (unreleased)
+----------------
+
+ - Compatibility update for zc.buildout 1.4.0 (mlundwall)
+
+0.1 (2008-11-22)
+----------------
+
+  - Initial release (mlundwall)

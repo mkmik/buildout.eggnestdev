@@ -1,0 +1,6 @@
+[eggnest]
+egg = 
+	collective.portlet.feedmixer
+zcml = 
+	collective.portlet.feedmixer
+	
