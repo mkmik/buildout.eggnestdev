@@ -49,6 +49,23 @@ def add_egg_to_part(buildout, part, egg):
             log.info(msg)
         else:            
             log.debug(msg)
+
+def add_develop(buildout, egg):
+    """Add the egg to the develop option of the part
+    """
+
+    part = "buildout"
+
+    if egg not in buildout[part]['develop']:
+        if not buildout[part]['develop'].endswith('\n'):
+            buildout[part]['develop'] += '\n'
+        buildout[part]['develop'] += egg
+        # be nice and show message if verbose is on
+        msg = "Added %s to the develop section of [%s]" % (egg, part)
+        if buildout['buildout'].get('eggnest-verbose', None) in ['true','True']:
+            log.info(msg)
+        else:
+            log.debug(msg)
         
 def add_zcml_to_part(buildout, part, zcmls):
     """Add all zcml entries to the part
@@ -85,7 +102,16 @@ def install(buildout=None):
         return
     if 'eggnest-parts' in buildout['buildout']:
         buildout_parts = buildout['buildout']['eggnest-parts'].split()
-        
+
+        for egg_to_install in get_eggs(src_dirs):
+            if 'develop' not in egg_to_install:
+                continue
+
+            # this is for compatibility with zc.buildout 1.4.0
+            if type(egg_to_install['develop']) == tuple:
+                egg_to_install['develop'] = egg_to_install['develop'][0]
+
+            add_develop(buildout, egg_to_install['develop'])
 
         for part in buildout_parts:
             if part in buildout.keys():
@@ -96,6 +122,9 @@ def install(buildout=None):
                     egg_to_install['egg'] = egg_to_install['egg'].strip()
                     add_egg_to_part(buildout, part, egg_to_install['egg'])
                     if not egg_to_install['egg'].startswith('Products'):
+                        if 'zcml' not in egg_to_install:
+                            continue
+
                         # this is for compatibility with zc.buildout 1.4.0
                         if type(egg_to_install['zcml']) == tuple:
                             egg_to_install['zcml'] = egg_to_install['zcml'][0]
