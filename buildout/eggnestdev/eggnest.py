@@ -23,7 +23,7 @@ def get_eggs(src_dirs):
                         try:
                             # this is for compatibility with zc.buildout 1.4.0
                             content = _open(os.path.dirname(file),os.path.join(directory, file),[], 
-                                                {}, {})
+                                                {}, {}, set())
                         except MissingSectionHeaderError:
                             continue
                     
